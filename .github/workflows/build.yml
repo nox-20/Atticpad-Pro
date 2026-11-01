@@ -15,36 +15,28 @@ jobs:
       run: unzip -o AtticPad_Pro_Edition_UI_UX.zip
 
     - name: Configurar Java 17
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         java-version: '17'
         distribution: 'temurin'
 
     - name: Instalar CMake 3.31.6 en el SDK de Android
       run: |
-        # Instala la versión exacta de CMake que el proyecto necesita
         yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "cmake;3.31.6" > /dev/null || true
 
-    - name: Buscar proyecto y compilar con Gradle
+    - name: Compilar APK
       run: |
-        # 1. Buscar la carpeta donde está el build.gradle.kts
+        # Buscar la carpeta del proyecto
         PROJECT_DIR=$(find . -name "build.gradle.kts" | head -n 1 | xargs dirname)
-        echo "La carpeta del proyecto es: $PROJECT_DIR"
-        
-        # 2. Entrar a la carpeta
         cd "$PROJECT_DIR"
         
-        # 3. Forzar a Gradle a usar la versión de CMake instalada (3.31.6)
+        # Forzar CMake y compilar
         echo "cmake.dir=$ANDROID_HOME/cmake/3.31.6" >> local.properties
-        
-        # 4. Compilar
         gradle assembleDebug
-        
-        # 5. Copiar el APK generado a la raíz para descargarlo fácil
-        cp app/build/outputs/apk/debug/app-debug.apk ../../app-debug.apk
 
     - name: Guardar APK
       uses: actions/upload-artifact@v4
       with:
         name: AtticPad-APK
-        path: app-debug.apk
+        # Esta línea busca el .apk en cualquier carpeta del proyecto automáticamente
+        path: "**/build/outputs/apk/debug/*.apk"
