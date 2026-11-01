@@ -20,19 +20,27 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Buscar proyecto y compilar con Gradle del sistema
+    - name: Instalar CMake en el SDK de Android
       run: |
-        # 1. Buscar la carpeta donde está el build.gradle
+        # Aceptar licencias e instalar CMake (versión 3.22.1 es la estándar y estable)
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "cmake;3.22.1" > /dev/null || true
+
+    - name: Buscar proyecto y compilar con Gradle
+      run: |
+        # 1. Buscar la carpeta donde está el build.gradle.kts
         PROJECT_DIR=$(find . -name "build.gradle.kts" | head -n 1 | xargs dirname)
         echo "La carpeta del proyecto es: $PROJECT_DIR"
         
         # 2. Entrar a la carpeta
         cd "$PROJECT_DIR"
         
-        # 3. Compilar usando el comando 'gradle' del sistema (no ./gradlew)
+        # 3. Forzar a Gradle a usar la versión de CMake instalada
+        echo "cmake.dir=$ANDROID_HOME/cmake/3.22.1" >> local.properties
+        
+        # 4. Compilar
         gradle assembleDebug
         
-        # 4. Copiar el APK generado a la raíz para descargarlo fácil
+        # 5. Copiar el APK generado a la raíz
         cp app/build/outputs/apk/debug/app-debug.apk ../../app-debug.apk
 
     - name: Guardar APK
