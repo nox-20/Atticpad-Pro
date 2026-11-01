@@ -20,10 +20,10 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Instalar CMake en el SDK de Android
+    - name: Instalar CMake 3.31.6 en el SDK de Android
       run: |
-        # Aceptar licencias e instalar CMake (versión 3.22.1 es la estándar y estable)
-        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "cmake;3.22.1" > /dev/null || true
+        # Instala la versión exacta de CMake que el proyecto necesita
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "cmake;3.31.6" > /dev/null || true
 
     - name: Buscar proyecto y compilar con Gradle
       run: |
@@ -34,13 +34,13 @@ jobs:
         # 2. Entrar a la carpeta
         cd "$PROJECT_DIR"
         
-        # 3. Forzar a Gradle a usar la versión de CMake instalada
-        echo "cmake.dir=$ANDROID_HOME/cmake/3.22.1" >> local.properties
+        # 3. Forzar a Gradle a usar la versión de CMake instalada (3.31.6)
+        echo "cmake.dir=$ANDROID_HOME/cmake/3.31.6" >> local.properties
         
         # 4. Compilar
         gradle assembleDebug
         
-        # 5. Copiar el APK generado a la raíz
+        # 5. Copiar el APK generado a la raíz para descargarlo fácil
         cp app/build/outputs/apk/debug/app-debug.apk ../../app-debug.apk
 
     - name: Guardar APK
