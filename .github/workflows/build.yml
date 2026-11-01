@@ -1,4 +1,4 @@
-name: Build APK from ZIP
+name: Build APK
 
 on:
   push:
@@ -21,11 +21,20 @@ jobs:
         distribution: 'temurin'
 
     - name: Compilar APK
-      working-directory: ./AtticPad_Pro_Edition_UI_UX
-      run: gradle assembleDebug
+      run: |
+        PROJECT_DIR=$(find . -name "settings.gradle*" | head -n 1 | xargs dirname)
+        echo "Carpeta del proyecto encontrada en: $PROJECT_DIR"
+        cd "$PROJECT_DIR"
+        
+        # Damos permisos al gradlew y compilamos
+        chmod +x gradlew
+        ./gradlew assembleDebug
+        
+        # Movemos el APK a la raíz para que sea fácil de encontrar
+        cp app/build/outputs/apk/debug/app-debug.apk ../../app-debug.apk
 
     - name: Guardar APK
       uses: actions/upload-artifact@v4
       with:
         name: AtticPad-APK
-        path: AtticPad_Pro_Edition_UI_UX/app/build/outputs/apk/debug/app-debug.apk
+        path: app-debug.apk
